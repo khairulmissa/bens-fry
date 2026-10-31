@@ -373,7 +373,9 @@
 
     function setupLightbox() {
       if (!dialog || typeof dialog.showModal !== "function") return;
-      const imgEl = document.getElementById("lightbox-img");
+      const imgEl = document.createElement("img");
+      imgEl.className = "lightbox__img";
+      dialog.querySelector(".lightbox__figure").prepend(imgEl);
       const captionEl = document.getElementById("lightbox-caption");
       const photos = () => [...grid.querySelectorAll(".gallery__item img")];
       let index = 0;
