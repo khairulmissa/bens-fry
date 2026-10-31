@@ -1654,6 +1654,19 @@ h1, h2, h3, h4 {
   50% { opacity: 0.35; }
 }
 
+/* scroll reveal */
+.has-reveal .reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s var(--ease) var(--reveal-delay, 0ms),
+    transform 0.7s var(--ease) var(--reveal-delay, 0ms);
+}
+
+.has-reveal .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
 
 /* reduced motion */
 @media (prefers-reduced-motion: reduce) {

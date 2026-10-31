@@ -44,7 +44,7 @@ const SITE_CONFIG = {
   socialHandle: "@bensfry",
   social: {
     instagram: "https://www.instagram.com/bensfry",
-    tiktok: "https://www.tiktok.com/@bensfry",
+    tiktok: "https://www.tiktok.com/@bens.fry",
     threads: "https://www.threads.net/@bensfry",
     facebook: "",
   },

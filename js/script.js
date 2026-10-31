@@ -84,14 +84,74 @@
       if (e.target.closest("a")) setOpen(false);
     });
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && isOpen()) {
+      if (!isOpen()) return;
+      if (e.key === "Escape") {
         setOpen(false);
         toggle.focus();
+      }
+      // keep tab focus inside the open menu
+      if (e.key === "Tab") {
+        const items = [toggle, ...menu.querySelectorAll("a")];
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     });
     desktop.addEventListener("change", (e) => {
       if (e.matches) setOpen(false);
     });
+  }
+
+  // highlight the nav link for the section on screen
+  function initActiveNav() {
+    const links = [...document.querySelectorAll(".nav__link")];
+    const sections = links
+      .map((link) => document.querySelector(link.getAttribute("href")))
+      .filter(Boolean);
+    if (!sections.length) return;
+
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const line = window.innerHeight * 0.35;
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      let current = sections[0];
+
+      if (atBottom) {
+        current = sections[sections.length - 1];
+      } else {
+        sections.forEach((section) => {
+          if (section.getBoundingClientRect().top <= line) current = section;
+        });
+      }
+
+      links.forEach((link) => {
+        const active = link.getAttribute("href") === `#${current.id}`;
+        link.classList.toggle("is-active", active);
+        if (active) link.setAttribute("aria-current", "true");
+        else link.removeAttribute("aria-current");
+      });
+    };
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true }
+    );
+    window.addEventListener("resize", update);
+    update();
   }
 
   // menu
@@ -439,6 +499,58 @@
     setInterval(updateOpenStatus, 60 * 1000);
   }
 
+  // fade sections in as they scroll into view
+  function initReveal() {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion || !("IntersectionObserver" in window)) return;
+
+    const targets = document.querySelectorAll(
+      [
+        ".section__header",
+        ".menu-group",
+        ".menu__footer",
+        ".about__media",
+        ".about__content",
+        ".feature",
+        ".gallery__item",
+        ".info-block",
+        ".location__map",
+        ".contact__inner",
+        ".footer__inner > *",
+      ].join(",")
+    );
+
+    // small stagger for items that sit next to each other
+    targets.forEach((el) => {
+      const siblings = [...el.parentElement.children].filter((c) => c.matches(".feature, .gallery__item, .info-block, .footer__inner > *"));
+      const index = siblings.indexOf(el);
+      if (index > 0) el.style.setProperty("--reveal-delay", `${Math.min(index, 5) * 80}ms`);
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target;
+          el.classList.add("is-visible");
+          observer.unobserve(el);
+          // clean up so hover transitions aren't affected afterwards
+          setTimeout(() => {
+            el.classList.remove("reveal", "is-visible");
+            el.style.removeProperty("--reveal-delay");
+          }, 1200);
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.08 }
+    );
+
+    document.documentElement.classList.add("has-reveal");
+    targets.forEach((el) => {
+      el.classList.add("reveal");
+      observer.observe(el);
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     bindConfig();
     bindSocialLinks();
@@ -450,5 +562,7 @@
     initPhotoSlots();
     initGallery();
     initOpenStatus();
+    initActiveNav();
+    initReveal();
   });
 })();
