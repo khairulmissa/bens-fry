@@ -7,8 +7,8 @@ const SITE_CONFIG = {
   signoff: "Good food, made with love.",
 
   phone: {
-    display: "019-756 1017",
-    international: "60197561017",
+    display: "011-33168215",
+    international: "601133168215",
   },
   whatsapp: {
     message: "Hi Ben's Fry! I'd like to ask about your menu.",
